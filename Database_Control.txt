@@ -1,0 +1,96 @@
+/* 
+ https://arduino.esp8266.com/stable/package_esp8266com_index.json
+ */
+
+#include <Arduino.h>
+#include <Wire.h>
+#include <Firebase.h>
+#include  <WiFi.h>
+
+
+
+#define FIREBASE_HOST "https://test-9c2e1-default-rtdb.firebaseio.com/"
+#define WIFI_SSID "Gmad Fam" // Change the name of your WIFI
+#define WIFI_PASSWORD "serafingamad123" // Change the password of your WIFI
+#define FIREBASE_AUTH "mo0YmuGvWEbkgfjBJo4fzUFL6eCzLzZR4wXTOt0Y"
+
+
+
+
+FirebaseData firebaseData;
+
+uint8_t Relay1 = 12;
+uint8_t Relay2 = 14;
+uint8_t Relay3 = 27;
+uint8_t Relay4 = 26;
+
+uint8_t LED = 25;
+
+int load1, load2, load3, load4, Power;
+
+void setup() {  
+Serial.begin(9600);
+  
+pinMode(Relay1, OUTPUT); digitalWrite(Relay1, HIGH);  
+pinMode(Relay2, OUTPUT); digitalWrite(Relay2, HIGH);
+pinMode(Relay3, OUTPUT); digitalWrite(Relay3, HIGH);
+pinMode(Relay4, OUTPUT); digitalWrite(Relay4, HIGH);
+
+pinMode(LED, OUTPUT); 
+
+WiFi.begin (WIFI_SSID, WIFI_PASSWORD);
+while(WiFi.status() != WL_CONNECTED) {
+ delay(500);
+ Serial.print(".");
+}
+Serial.println ("");
+Serial.println ("WiFi Connected!");
+Firebase.begin(FIREBASE_HOST,FIREBASE_AUTH);
+digitalWrite(LED,HIGH);
+delay(100);
+}
+
+void loop() {
+
+if(Firebase.get(firebaseData,"/POWER")) {
+ if (firebaseData.dataType() == "string") {
+ Power = firebaseData.stringData().toInt();
+ }
+}
+
+if(Firebase.get(firebaseData,"/CHAMBER")) {
+ if (firebaseData.dataType() == "string") {
+ load1 = firebaseData.stringData().toInt();
+ }
+}
+
+if(Firebase.get(firebaseData,"/FAN")) {
+ if (firebaseData.dataType() == "string") {
+ load2 = firebaseData.stringData().toInt();
+ }
+}
+
+if(Firebase.get(firebaseData,"/TILT")) {
+ if (firebaseData.dataType() == "string") {
+ load3 = firebaseData.stringData().toInt();
+ }
+}
+
+if(Firebase.get(firebaseData,"/VIBRATION")) {
+ if (firebaseData.dataType() == "string") {
+ load4 = firebaseData.stringData().toInt();
+ }
+}
+
+if(Power==0){
+digitalWrite(Relay1, load1);  
+digitalWrite(Relay2, load2);
+digitalWrite(Relay3, load3);
+digitalWrite(Relay4, load4);
+}else{
+digitalWrite(Relay1, HIGH);  
+digitalWrite(Relay2, HIGH);
+digitalWrite(Relay3, HIGH);
+digitalWrite(Relay4, HIGH);  
+ }
+}

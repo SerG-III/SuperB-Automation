@@ -1,0 +1,66 @@
+#include<Wire.h>
+#include "DHT.h"
+
+#define RELAY_FAN_PIN A5 // Arduino pin connected to relay which connected to fan
+#define DHTPIN 12           // Arduino pin connected to relay which connected to DHT sensor
+#define DHTTYPE DHT11
+
+const int TEMP_THRESHOLD_UPPER = 38; // NEED NA VALUE THRESHOLD PARA MAG ON
+const int TEMP_THRESHOLD_LOWER = 35; // lower threshold of temperature, change to your desire value
+
+DHT dht(DHTPIN, DHTTYPE);
+
+float temperature;    // temperature in Celsius
+byte data = 0;
+
+void setup()
+{
+  Serial.begin(9600); // initialize serial
+  dht.begin();        // initialize the sensor
+  pinMode(RELAY_FAN_PIN, OUTPUT); // initialize digital pin as an output
+}
+
+void loop()
+{
+  Wire.begin(4);
+  delay(2000);
+
+  temperature = dht.readTemperature();
+  data = byte(temperature);
+ 
+  Wire.onReceive(receiveEvent);
+  Wire.onRequest(requestEvent);
+  Serial.print(" ");
+  Serial.print("UNITS: ");
+  Serial.println(temperature);
+ 
+
+    if(temperature > TEMP_THRESHOLD_UPPER){
+      
+      digitalWrite(RELAY_FAN_PIN, LOW); // turn on
+    } else if(temperature < TEMP_THRESHOLD_LOWER){
+      
+      digitalWrite(RELAY_FAN_PIN, HIGH); // turn on
+    }
+}
+
+void receiveEvent(){
+  while(0 < Wire.available()) 
+  {
+    char c = Wire.read(); 
+    Serial.print(" ");
+    Serial.print(c);
+             
+  }
+
+}
+
+void requestEvent(){
+  
+
+  Wire.write(data);
+  
+
+}
+
+
